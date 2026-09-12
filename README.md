@@ -1,1 +1,253 @@
 # Bigger-Coin
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bigger Coin Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0b0c10;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #66fcf1;
+            text-shadow: 0 0 10px rgba(102, 252, 241, 0.3);
+        }
+
+        .balance-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(102, 252, 241, 0.1);
+        }
+
+        .balance-label {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #c5c6c7;
+        }
+
+        .balance-amount {
+            font-size: 42px;
+            font-weight: bold;
+            color: #66fcf1;
+            margin-top: 5px;
+        }
+
+        .coin-button {
+            background: none;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            margin-bottom: 30px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .coin-button:active {
+            transform: scale(0.95);
+        }
+
+        .coin-image {
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, #f7b924 0%, #d4af37 60%, #aa7c11 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 70px;
+            box-shadow: 0 0 30px rgba(247, 185, 36, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.6);
+            border: 5px solid #fff;
+            user-select: none;
+        }
+
+        .feature-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .feature-box h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-size: 16px;
+            color: #66fcf1;
+        }
+
+        .feature-box p {
+            font-size: 12px;
+            color: #a1a1a1;
+            margin: 0 0 10px 0;
+        }
+
+        .share-btn {
+            background-color: #66fcf1;
+            color: #0b0c10;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .share-btn:hover {
+            background-color: #45a29e;
+        }
+
+        .withdraw-btn {
+            background-color: #222;
+            color: #666;
+            border: 1px solid #333;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: not-allowed;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge {
+            background-color: #ff4a4a;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            background: #45a29e;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: none;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>Bigger Coin</h1>
+        
+        <!-- Balance UI -->
+        <div class="balance-container">
+            <div class="balance-label">Your Balance</div>
+            <div class="balance-amount" id="balance">0</div>
+        </div>
+
+        <!-- Interactive Coin Button -->
+        <button class="coin-button" id="coinBtn">
+            <div class="coin-image">🪙</div>
+        </button>
+
+        <!-- Referral Section -->
+        <div class="feature-box">
+            <h3>Invite Friends</h3>
+            <p>Get +500 coins for every friend who joins via your link!</p>
+            <button class="share-btn" id="copyRefBtn">Copy Referral Link</button>
+        </div>
+
+        <!-- Withdrawal Section -->
+        <div class="feature-box">
+            <h3>Withdrawal <span class="status-badge">Locked</span></h3>
+            <p>Coins cannot be withdrawn yet. Withdrawal functionality will automatically unlock as soon as Bigger Coin officially launches! Stay tuned.</p>
+            <button class="withdraw-btn" disabled>🔒 Locked Until Launch</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Link copied!</div>
+
+    <script>
+        let balance = parseInt(localStorage.getItem('coin_balance')) || 0;
+        const balanceDisplay = document.getElementById('balance');
+        const coinBtn = document.getElementById('coinBtn');
+
+        balanceDisplay.textContent = balance.toLocaleString();
+
+        coinBtn.addEventListener('click', () => {
+            balance += 1; 
+            balanceDisplay.textContent = balance.toLocaleString();
+            localStorage.setItem('coin_balance', balance);
+        });
+
+        let userId = localStorage.getItem('game_user_id');
+        if (!userId) {
+            userId = 'user_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('game_user_id', userId);
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const referrer = urlParams.get('ref');
+        const hasClaimedRef = localStorage.getItem('claimed_referral');
+
+        if (referrer && !hasClaimedRef) {
+            balance += 500; 
+            balanceDisplay.textContent = balance.toLocaleString();
+            localStorage.setItem('coin_balance', balance);
+            localStorage.setItem('claimed_referral', 'true');
+            showToast("Welcome! Received 500 bonus coins!");
+        }
+
+        const copyRefBtn = document.getElementById('copyRefBtn');
+        copyRefBtn.addEventListener('click', () => {
+            const cleanUrl = window.location.href.split('?')[0];
+            const referralLink = `${cleanUrl}?ref=${userId}`;
+            
+            navigator.clipboard.writeText(referralLink).then(() => {
+                showToast("Referral link copied!");
+            }).catch(() => {
+                alert("Share this link: " + referralLink);
+            });
+        });
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
